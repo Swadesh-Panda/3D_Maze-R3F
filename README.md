@@ -1,4 +1,6 @@
-## 3D_Maze-R3F
+# 3D_Maze-R3F
+
+```
 # Install dependencies
 npm install
 
@@ -10,3 +12,4 @@ npm run build
 
 # Locally preview production build
 npm run preview
+```
