@@ -1,4 +1,4 @@
-# 3D_Maze-R3F
+## 3D_Maze-R3F
 # Install dependencies
 npm install
 
