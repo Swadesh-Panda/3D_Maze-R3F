@@ -1,6 +1,6 @@
 import UI from "./Utils/UI"
 import Crosshair from "./Utils/Crosshair"
-import DefaultScene from "./scene/DefaultScene";
+import DefaultScene from "./scenes/DefaultScene";
 import { Canvas } from "@react-three/fiber";
 
 const Game = () => {
@@ -12,7 +12,7 @@ const Game = () => {
       <Canvas 
         shadows
         gl={{ alpha: false }}
-        camera={{ fov: 45 }}
+        camera={{ fov: 50 }}
       >
         <DefaultScene />
       </Canvas>
