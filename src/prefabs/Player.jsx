@@ -1,16 +1,19 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useBox, useCylinder, useSphere } from "@react-three/cannon";
 import { useThree, useFrame } from "@react-three/fiber";
-import { Raycaster, Vector3 } from "three";
+import { MathUtils, Raycaster, Vector3 } from "three";
 import Weapon from "../assets/models/Weapon"
 import useVariable from "../hooks/useVariable"
 import useKeyboardInput from "../hooks/useKeyboardInput"
 import useMouseInput from "../hooks/useMouseInput"
 
 // Constants
-const speed = 200;
+const walkSpeed = 200;
+const runSpeed = 400;
+
 const attackSpeed = 30;
 const attackCoolDown = 800;
+
 const jumpSpeed = 4;
 const jumpCoolDown = 800;
 
@@ -43,11 +46,18 @@ const Player = (props) => {
 
   // States
   const state = useRef({
+    jumping: false,
+    moving: false,
+    blocking: false,
+    
     timeToAttack: 0,
     timeTojump: 0,
     vel: [0, 0, 0],
-    jumping: false,
   });
+  // Animations
+  const animations = {
+
+  }
 
   useEffect(() => {
     api.velocity.subscribe((v) => (state.current.vel = v));
@@ -79,6 +89,11 @@ const Player = (props) => {
     
 
     // Mesh Movement
+    let speed = walkSpeed
+
+    if(shift) speed = runSpeed
+    else speed = walkSpeed
+
     if (horizontal !== 0 && vertical !== 0) {
       velocity
         .add(forward.clone().multiplyScalar(speed * vertical))
@@ -91,6 +106,9 @@ const Player = (props) => {
     else if (vertical !== 0) {
       velocity.add(forward.clone().multiplyScalar(speed * vertical));
     }
+
+    if(horizontal || vertical) state.current.moving = true
+    else state.current.moving = false
 
     // Body Movement
     api.velocity.set(
@@ -133,57 +151,17 @@ const Player = (props) => {
     
     // Weapon Movement
     let q = new Vector3()
+    weapon.current.position.y = 1
     weapon.current.rotation.copy(camera.rotation);
     weapon.current.position.copy(camera.position).add(camera.getWorldDirection(q).multiplyScalar(1));
     
-
-    //-----------------------------Set_Action---------------------------//
-    switch (action) {
-
-      case "idle":
-        if(horizontal || vertical) setAction("walk")
-        else if(state.current.jumping) setAction("jump_loop")
-        else if(mouseInput.current.left.hold) setAction("attack_left")
-        break;     
-
-      case "walk":
-        if(horizontal || vertical)
-        {
-            if(shift) setAction("run")
-            if(state.current.jumping) setAction("jump_loop")
-        }
-        else setAction("idle")
-        break;
-        
-      case "run":
-        if(horizontal || vertical)
-        {
-            if(!shift) setAction("walk")
-            if(state.current.jumping) setAction("jump_loop")
-        }
-        else setAction("idle")
-        break;
-                  
-      case "jump_loop":
-        if(! state.current.jumping) setAction("idle")
-        break;
-      
-      case "attack_left":
-        if(! mouseInput.current.left.hold) setAction("idle")
-
-        
-        break;
-    
-      default:
-        break;
-    }
   }
 
   //-----------------------------Set_Combat_System---------------------------//
   const SetCombat = (delta) => {
 
     // Attack
-    if (mouseInput.current.left.hold) {
+    if (mouseInput.current.left) {
 
       const now = Date.now();
       if(now >= state.current.timeToAttack) {
@@ -191,54 +169,82 @@ const Player = (props) => {
         const raycaster = new Raycaster()
         let offset = {x:0, y:0}
         raycaster.setFromCamera(offset, camera)
-        raycaster.far = 0.8
+        raycaster.far = 4
         
         // Targets
-        const target = scene.getObjectByName("walls")
+        const target = scene.getObjectByName("enemy")
         const hits = raycaster.intersectObject(target)
 
-        if(hits[0]) console.log(hits[0].object);
+        if(hits[0]) {
+          hits[0].object.parent.health --;
+          console.log(hits[0].object.parent.health);
+        }
         
         // Attack Cooldown
         state.current.timeToAttack = now + attackCoolDown;
       }
+
     }
+
+    // Defend
+    if (mouseInput.current.right) {
+      const {shift} = input.current
+      const {moving, jumping} = state.current
+
+      if( (moving && shift) || jumping) state.current.blocking = false
+      else state.current.blocking = true
+    }
+    else state.current.blocking = false
 
   }
 
-  const setAnimation = () => {
-    const [anim, setAnim] = useState()
+  //-----------------------------Set_Animation---------------------------//
+  const SetAnimation = (delta) => {
+    const {shift} = input.current
+    const {moving,jumping,blocking} = state.current
+    const {left, right} = mouseInput.current
 
-    switch(anim)
-    {
-      case 'idle':
+    switch (action) {
+      case "idle":
+        if(moving) setAction("walk")
+        if(left) setAction("attack_left")
+        if(blocking) setAction("block_loop")
         break;
-        
-      case 'walk':
+    
+      case "walk":
+        if(moving)
+        {
+          if(shift) setAction("run")
+          if(left) setAction("attack_left")
+        }
+        else setAction("idle")
         break;
-        
-      case 'run':
+            
+      case "run":
+        if(moving)
+        {
+          if(!shift) setAction("walk")
+        }
+        else setAction("idle")
+        break;       
+
+      case "attack_left":
+        if(!left) setAction("idle")
         break;
-        
-      case 'jump_loop':
+
+      case "block_loop":
+        if(!blocking) setAction("idle")
         break;
-        
-      case 'attack_right':
-        break;
-        
-      case 'attack_left':
-        break;
-        
-      case 'attack_down':
+    
+      default:
         break;
     }
   }
 
-
-
-  useFrame((_,delta) => {
+  useFrame((state,delta) => {
     SetMovement(delta)
     SetCombat(delta)
+    SetAnimation(delta)
 
   });
 

@@ -1,4 +1,5 @@
-import React from "react";
+import { useFrame } from "@react-three/fiber";
+import React, { useRef } from "react";
 import Hollow from "../assets/models/Hollow";
 
 const Enemy = () => {

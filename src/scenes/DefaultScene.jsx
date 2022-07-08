@@ -7,7 +7,7 @@ import React from "react";
 import Ground from "../prefabs/Ground";
 import Player from "../prefabs/Player";
 import Enemy from "../prefabs/Enemy";
-import { Walls } from "../prefabs/Wall"
+import { Wall, Walls } from "../prefabs/Wall"
 
 const DefaultScene = () => {
   return (
@@ -38,13 +38,13 @@ const DefaultScene = () => {
 
         <Player />
 
-        <group name="walls">
-          <Walls num={5}/>
-        </group>
+        <Enemy />
+>
+        <Walls num={5} type={"Static"} rotation={[0,Math.PI * 0.5,0]}/>
 
-        {/* <group name="enemies">
-          <Enemy />
-        </group> */}
+        <group name="enemy" health={100}>
+          <Wall position={[2,0,2]} type={"static"} />
+        </group>
 
 
       </Physics>

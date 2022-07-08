@@ -6,18 +6,18 @@ import { useGLTF } from "@react-three/drei";
 // Constants
 const paletteIndex = 8;
 
-const Walls = ({num}) => {
+const Walls = ({num, ...props}) => {
 if(!num) return
 
 else return(
   <>
-    <Damaged_Wall position={[num * 7.9, 1.5, 5]} type={"Static"} rotation={[0,Math.PI * 0.5,0]} />
-    <Walls num={num - 1} />
+    <Damaged_Wall position={[num * 7.9, 1.5, 5]} {...props} />
+    <Walls num={num - 1} {...props} />
   </>
   )
 }
 
-const Wall = (props) => {
+const Wall = ({...props}) => {
   const [cubeRef] = useBox(() => ({
     mass: 1,
     args: [2, 3, 0.5],

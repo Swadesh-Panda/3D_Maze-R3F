@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 
 const useMouseInput = () => {
-  const [keysPressed, setPressedKeys] = useState({ left:{}, right:{}});
+  const [keysPressed, setPressedKeys] = useState({ left: false, right: false });
 
   useEffect(() => {
     const handleMouseDown = (e) => {
       if (e.button === 2) {
-        setPressedKeys((current) => ({ ...current, right:{hold: true, down: true} }));
+        setPressedKeys((current) => ({ ...current, right: true }));
       } else if (e.button === 0) {
-        setPressedKeys((current) => ({ ...current, left:{hold: true, down: true} }));
+        setPressedKeys((current) => ({ ...current, left: true }));
       }
     };
     const handleMouseUp = (e) => {
       if (e.button === 2) {
-        setPressedKeys((current) => ({ ...current, right:{hold: false, up: true} }));
+        setPressedKeys((current) => ({ ...current, right: false }));
       } else if (e.button === 0) {
-        setPressedKeys((current) => ({ ...current, left:{hold: false, up: true} }));
+        setPressedKeys((current) => ({ ...current, left: false }));
       }
     };
 
