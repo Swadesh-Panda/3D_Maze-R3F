@@ -2,6 +2,9 @@ import React from "react";
 import styled from "styled-components";
 
 const CrosshairStyle = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
   height: 5px;
   width: 5px;
   background-color: white;

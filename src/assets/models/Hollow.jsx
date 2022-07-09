@@ -11,28 +11,15 @@ let current_state = "Idle";
 export default function Hollow({ ...props }) {
   const group = useRef()
   const { nodes, materials, animations } = useGLTF('/models/Enemy.glb')
-  const { actions, names, clips } = useAnimations(animations, group);
-  
-  /** Set Animation */
-  useEffect(() => {
-    // const newAction = actions[props.action];
-    // const oldAction = actions[current_state];
-
-    // newAction.reset();
-
-    // newAction.play();
-    // newAction.crossFadeFrom(oldAction, 0.2);
-
-    // current_state = props.action;
-  }, [actions, props.action]);
+  const { actions } = useAnimations(animations, group);
 
   return (
     <Suspense fallback={null}>
       <group ref={group} {...props} dispose={null}>
         <group rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
           <primitive object={nodes.mixamorigHips} />
-          <skinnedMesh name='enemy' geometry={nodes.Body.geometry} material={materials['lambert3SG.004']} skeleton={nodes.Body.skeleton} />
-          <skinnedMesh geometry={nodes.Head.geometry} material={materials['lambert2SG.003']} skeleton={nodes.Head.skeleton} />
+          <skinnedMesh name='1' geometry={nodes.Body.geometry} material={materials['lambert3SG.004']} skeleton={nodes.Body.skeleton} />
+          <skinnedMesh name='2' geometry={nodes.Head.geometry} material={materials['lambert2SG.003']} skeleton={nodes.Head.skeleton} />
         </group>
       </group>
     </Suspense>

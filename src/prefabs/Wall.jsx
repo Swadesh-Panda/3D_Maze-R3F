@@ -25,7 +25,7 @@ const Wall = ({...props}) => {
       friction: 1,
       restitution: 0
     },
-    ...props
+    ...props,
   }));
 
   /** Random cube color */
@@ -38,7 +38,7 @@ const Wall = ({...props}) => {
   );
 
   return (
-    <mesh ref={cubeRef} castShadow layers={props.layers}>
+    <mesh ref={cubeRef} castShadow {...props}>
       <boxBufferGeometry args={[2, 3, 0.5]} />
       <meshLambertMaterial color={color} />
     </mesh>

@@ -1,4 +1,4 @@
-import { PointerLockControls, OrbitControls } from "@react-three/drei";
+import { PointerLockControls } from "@react-three/drei";
 import { Physics } from "@react-three/cannon";
 import { Environment } from "@react-three/drei";
 import React from "react";
@@ -38,12 +38,10 @@ const DefaultScene = () => {
 
         <Player />
 
-        <Enemy />
->
         <Walls num={5} type={"Static"} rotation={[0,Math.PI * 0.5,0]}/>
 
-        <group name="enemy" health={100}>
-          <Wall position={[2,0,2]} type={"static"} />
+        <group name="enemy">
+          <Enemy />
         </group>
 
 
