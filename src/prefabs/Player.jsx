@@ -41,6 +41,7 @@ const Player = ({ ...props }) => {
     material: {
       friction: 0.1,
     },
+    ...props,
   }));
 
   // Input Hooks
@@ -72,7 +73,7 @@ const Player = ({ ...props }) => {
     let velocity = new Vector3(0, 0, 0);
     let forward = new Vector3();
     let right = new Vector3();
-
+    
     ref.current.getWorldPosition(camera.position);
     forward.setFromMatrixColumn(camera.matrix, 0);
     forward.crossVectors(camera.up, forward);
@@ -163,7 +164,7 @@ const Player = ({ ...props }) => {
           const raycaster = new Raycaster();
           let offset = { x: 0, y: 0 };
           raycaster.setFromCamera(offset, camera);
-          raycaster.far = 4;
+          raycaster.far = 2;
   
           // Targets
           const hits = raycaster.intersectObject(scene.getObjectByName("enemy"));
@@ -346,7 +347,7 @@ const Player = ({ ...props }) => {
   });
 
   return (
-    <group name="player" health={100} blocking={state.current.blocking} {...props}>
+    <group name="player" health={100} blocking={state.current.blocking}>
       {/* Weapon */}
       <group ref={weapon}>
         <Suspense fallback={null}>

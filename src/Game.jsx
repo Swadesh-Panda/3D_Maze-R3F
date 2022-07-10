@@ -14,7 +14,7 @@ const Game = () => {
       <Canvas 
         shadows
         gl={{ alpha: false }}
-        camera={{ fov: 45 }}
+        camera={{ fov: 45, rotation:[0,-Math.PI/2,0] }}
       >
         <DefaultScene />
       </Canvas>

@@ -7,7 +7,8 @@ import React from "react";
 import Ground from "../prefabs/Ground";
 import Player from "../prefabs/Player";
 import Enemy from "../prefabs/Enemy";
-import { Wall, Walls } from "../prefabs/Wall"
+import { Damaged_Wall } from "../prefabs/Wall";
+import Maze from "../prefabs/Maze";
 
 const DefaultScene = () => {
   return (
@@ -36,13 +37,13 @@ const DefaultScene = () => {
       >
         <Ground />
 
-        <Player />
-
-        <Walls num={5} type={"Static"} rotation={[0,Math.PI * 0.5,0]}/>
+        <Player position= {[0, 2, 8*7]} />
 
         <group name="enemy">
-          <Enemy position={[0,1,-15]} />
+          <Enemy position={[8*4, 1, 8*8]} />
         </group>
+        
+        <Maze />
 
 
       </Physics>

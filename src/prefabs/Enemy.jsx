@@ -1,7 +1,7 @@
 import { useCylinder } from "@react-three/cannon";
 import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { LoopOnce, Vector3 } from "three";
 
 // hooks
@@ -241,7 +241,7 @@ const Enemy = ({ ...props }) => {
     <group ref={ref} userData={{ isParent: true }} health={100}>
       
       {/* HealthBar */}
-        <Html scale={0.5} rotation={[0,0,0]} position={[0, 0.8, 0]} transform occlude>
+        <Html scale={0.5} rotation={[0,camera.rotation.y,0]} position={[0, 0.8, 0]} transform occlude>
             <div className="hpbar">
               HP: {hp}
             </div>
@@ -249,7 +249,9 @@ const Enemy = ({ ...props }) => {
 
       {/* Model */}
       <group ref={model}>
-        <Knight position={[0, -0.6, -0.5]} scale={0.4} />
+        <Suspense fallback={null}>
+         <Knight position={[0, -0.6, -0.5]} scale={0.4} />
+        </Suspense>
       </group>
     </group>
   );
