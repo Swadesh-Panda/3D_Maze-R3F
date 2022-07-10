@@ -1,20 +1,24 @@
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useBox, useCylinder, useSphere } from "@react-three/cannon";
+import { useCylinder } from "@react-three/cannon";
 import { useThree, useFrame } from "@react-three/fiber";
 import { LoopOnce, Raycaster, Vector3 } from "three";
-import Weapon from "../assets/models/Weapon";
+
+// Custom Hooks
 import useVariable from "../hooks/useVariable";
 import useKeyboardInput from "../hooks/useKeyboardInput";
 import useMouseInput from "../hooks/useMouseInput";
 import usePrevious from "../hooks/usePrevious";
 import getParent from "../scripts/getParent";
 
+// Models
+import Emperor from "../assets/models/Emperor";
+
 // Constants
 const walkSpeed = 200;
 const runSpeed = 400;
 
 const attackSpeed = 30;
-const attackCoolDown = 800;
+const attackCoolDown = 1000;
 
 const jumpSpeed = 4;
 const jumpCoolDown = 800;
@@ -24,6 +28,8 @@ const Player = ({ ...props }) => {
 
   // Player Object
   const player = scene.getObjectByName("player");
+  const player_hp = document.getElementById("player_hp");
+  
   // Weapon Ref
   const weapon = useRef();
   // Player Body
@@ -33,7 +39,7 @@ const Player = ({ ...props }) => {
     position: [0, 2, 0],
     args: [0.8, 0.8, 2.2, 10],
     material: {
-      friction: 0,
+      friction: 0.1,
     },
   }));
 
@@ -56,8 +62,6 @@ const Player = ({ ...props }) => {
     timeTojump: 0,
     vel: [0, 0, 0],
   });
-  // Animations
-  const animations = {};
 
   useEffect(() => {
     api.velocity.subscribe((v) => (state.current.vel = v));
@@ -152,17 +156,22 @@ const Player = ({ ...props }) => {
       const now = Date.now();
       if (now >= state.current.timeToAttack) {
         state.current.attacking = true;
-        // Raycaster
-        const raycaster = new Raycaster();
-        let offset = { x: 0, y: 0 };
-        raycaster.setFromCamera(offset, camera);
-        raycaster.far = 4;
 
-        // Targets
-        const hits = raycaster.intersectObject(scene.getObjectByName("enemy"))
-        let target = null
-        if(hits[0]) target = getParent(hits[0].object)
-        if(target) target.health --;
+        if(state.current.attacking)
+        {
+          // Raycaster
+          const raycaster = new Raycaster();
+          let offset = { x: 0, y: 0 };
+          raycaster.setFromCamera(offset, camera);
+          raycaster.far = 4;
+  
+          // Targets
+          const hits = raycaster.intersectObject(scene.getObjectByName("enemy"));
+          let target = null;
+          if (hits[0]) target = getParent(hits[0].object);
+          if (target && target.health >0) target.health -= 25;
+
+        }
 
         // Attack Cooldown
         state.current.timeToAttack = now + attackCoolDown;
@@ -177,12 +186,19 @@ const Player = ({ ...props }) => {
       if ((moving && shift) || jumping) state.current.blocking = false;
       else state.current.blocking = true;
     } else state.current.blocking = false;
+
+    
+    // Health Bar
+    if(player)
+    {
+      player_hp.style.width = player.health + "%";
+    }
   };
 
   //-----------------------------Set_Animation---------------------------//
   let actions = null;
   let mixer = null;
-  if (weapon.current) {
+  if (weapon.current && weapon.current.children[0]) {
     actions = weapon.current.children[0].actions;
     mixer = weapon.current.children[0].mixer;
     actions["idle"].play();
@@ -210,8 +226,8 @@ const Player = ({ ...props }) => {
         actions[action].crossFadeFrom(actions[prevAction], 0.2);
         actions[action].play();
         break;
-
-      case "jump":
+ 
+      case "jump_start":
         mixer.addEventListener("finished", Finished);
         actions[action].reset();
         actions[action].setLoop(LoopOnce, 1);
@@ -223,12 +239,21 @@ const Player = ({ ...props }) => {
       case "attack_left":
         mixer.addEventListener("finished", Finished);
         actions[action].reset();
-        const ratio = attackCoolDown / actions[action].getClip().duration;
-        actions[action].setEffectiveTimeScale(ratio);
+        const dur = actions[action].getClip().duration * 1000
+        actions[action].setEffectiveTimeScale((attackCoolDown+100)/dur);
         actions[action].setEffectiveWeight(1.0);
         actions[action].setLoop(LoopOnce, 1);
         actions[action].clampWhenFinished = true;
-        actions[action].crossFadeFrom(actions[prevAction], 0.4);
+        actions[action].crossFadeFrom(actions[prevAction], 0);
+        actions[action].play();
+        break;
+
+      case "block_start":
+        actions[action].reset();
+        actions[action].setEffectiveWeight(1.0);
+        actions[action].setLoop(LoopOnce, 1);
+        actions[action].clampWhenFinished = true;
+        actions[action].crossFadeFrom(actions[prevAction], 0);
         actions[action].play();
         break;
 
@@ -250,16 +275,16 @@ const Player = ({ ...props }) => {
         actions[action].play();
         break;
 
-      case "block_loop":
+      case "idle":
         actions[action].time = 0.0;
         actions[action].enabled = true;
-        actions[action].setEffectiveTimeScale(1);
+        actions[action].setEffectiveTimeScale(1.0);
         actions[action].setEffectiveWeight(1.0);
-        actions[action].crossFadeFrom(actions[prevAction], 0.1);
+        actions[action].crossFadeFrom(actions[prevAction], 0.25);
         actions[action].play();
         break;
 
-      case "idle":
+      case "jump_loop":
         actions[action].time = 0.0;
         actions[action].enabled = true;
         actions[action].setEffectiveTimeScale(1.0);
@@ -281,22 +306,32 @@ const Player = ({ ...props }) => {
       case "idle":
         if (moving) setAction("walk");
         else if (attacking) setAction("attack_left");
-        else if (blocking) setAction("block_loop");
+        else if (blocking) setAction("block_start");
         break;
 
       case "walk":
         if (moving && shift) setAction("run");
-        else if (blocking) setAction("block_loop");
+        else if (attacking) setAction("attack_left");
         else if (!moving) setAction("idle");
         break;
 
       case "run":
         if (moving && !shift) setAction("walk");
+        else if (attacking) setAction("attack_left");
         else if (!moving) setAction("idle");
         break;
 
-      case "block_loop":
+      case "jump_start":
+        if (jumping) setAction("jump_loop");
+        break;
+      
+      case "jump_loop":
+        if(!jumping) setAction("idle");
+
+      case "block_start":
         if (!blocking) setAction("idle");
+        else if (attacking) setAction("attack_left");
+        else if (moving) setAction("walk")
         break;
 
       default:
@@ -311,14 +346,14 @@ const Player = ({ ...props }) => {
   });
 
   return (
-    <group name="player" health={100} {...props}>
+    <group name="player" health={100} blocking={state.current.blocking} {...props}>
       {/* Weapon */}
       <group ref={weapon}>
         <Suspense fallback={null}>
-          <Weapon
-            position={[0, -1, 1]}
-            rotation={[0, Math.PI * 0.96, 0]}
-            scale={0.6}
+          <Emperor
+            position={[0, -1.3, 1]}
+            rotation={[0, Math.PI, 0]}
+            scale={0.8}
           />
         </Suspense>
       </group>

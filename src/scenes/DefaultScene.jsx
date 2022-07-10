@@ -41,7 +41,7 @@ const DefaultScene = () => {
         <Walls num={5} type={"Static"} rotation={[0,Math.PI * 0.5,0]}/>
 
         <group name="enemy">
-          <Enemy />
+          <Enemy position={[0,1,-15]} />
         </group>
 
 

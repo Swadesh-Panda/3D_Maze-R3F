@@ -1,8 +1,8 @@
-import UI from "./UI/UI"
-import Crosshair from "./UI/Crosshair"
+import UI from "./Utils/UI"
+import Crosshair from "./Utils/Crosshair"
 import DefaultScene from "./scenes/DefaultScene";
 import { Canvas } from "@react-three/fiber";
-import HealthBar from "./UI/HealthBar";
+import HealthBar from "./Utils/HealthBar";
 
 const Game = () => {
   return (
