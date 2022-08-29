@@ -9,6 +9,7 @@ import Player from "../prefabs/Player";
 import Enemy from "../prefabs/Enemy";
 import { Damaged_Wall } from "../prefabs/Wall";
 import Maze from "../prefabs/Maze";
+import Plate from "../prefabs/Plate";
 
 const DefaultScene = () => {
   return (
@@ -36,6 +37,8 @@ const DefaultScene = () => {
         broadphase={"SAP"}
       >
         <Ground />
+
+        <Plate position={[0, 2, 8*7]} />
 
         <Player position= {[0, 2, 8*7]} />
 
